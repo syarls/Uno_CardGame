@@ -14,7 +14,7 @@ The 2018 edition of the game consists of 112 cards: 25 in each of four color sui
 
 <style scoped>
 .background {
-    background-image: url('../assets/background/about.png');
+    background-image: url('/background/about.png');
     position: relative;
     min-height: 100vh;
     min-width: 100vw;

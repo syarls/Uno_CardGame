@@ -1,26 +1,29 @@
 <template>
   <div class="main-bg">
     <div class="container">
-    <img src="../assets/images/fontbolt.png" height="50px">
+      <img src="/images/fontbolt.png" height="50px" />
       <div class="character-list">
-        <button class="prev-btn" @click="prevCard" v-show="currentIndex > 0">&#10094;</button>
-        <transition-group name="card" tag="div">
-          <div v-for="(card, index) in displayedCards" :key="card.name" class="character-item">
+        <button class="prev-btn" @click="prevCard" v-show="currentIndex > 0">
+          &#10094;
+        </button>
+        <transition-group name="card" tag="div" class="character-list">
+          <div v-for="card in displayedCards" :key="card.name" class="character-item">
             <div class="character-image">
-              <img :src="card.image" class="card-img">
+              <img :src="card.image" class="card-img" />
             </div>
             <div class="character-info">
-              <img :src="card.name" height="35px">
+              <img :src="card.name" height="35px" />
             </div>
           </div>
         </transition-group>
-        <button class="next-btn" @click="nextCard" v-show="currentIndex < cards.length - numDisplayedCards">&#10095;</button>
+        <button class="next-btn" @click="nextCard" v-show="currentIndex < cards.length - numDisplayedCards">
+          &#10095;
+        </button>
       </div>
     </div>
   </div>
 </template>
 <script>
-import cardData from '../assets/images/cards.json';
 
 export default {
   data() {
@@ -29,18 +32,42 @@ export default {
       currentIndex: 0,
       numDisplayedCards: 3,
       currentColorIndex: 0,
+      colors: ["blue", "red", "yellow", "green"]
     };
   },
   computed: {
     displayedCards() {
-      return this.cards.slice(this.currentIndex, this.currentIndex + this.numDisplayedCards);
+      return this.cards.slice(
+        this.currentIndex,
+        this.currentIndex + this.numDisplayedCards
+      ).map(card => ({
+        ...card,
+        image: card[this.colors[this.currentColorIndex]] // rotate color
+      }));
+
     },
   },
   mounted() {
-    this.cards = cardData.cards;
-    setInterval(this.changeCardColors, 3000); 
+    console.log("Mounted called");
+    this.loadCards();
+    setInterval(() => {
+      this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
+    }, 3000);
   },
   methods: {
+    async loadCards() {
+      try {
+        const res = await fetch("/images/cards.json");
+        const data = await res.json();
+
+        this.cards = Array.isArray(data.cards) ? data.cards : [];
+
+        console.log("Loaded cards:", this.cards);
+      } catch (err) {
+        console.error("Failed to load cards.json:", err);
+        this.cards = [];
+      }
+    },
     nextCard() {
       if (this.currentIndex < this.cards.length - this.numDisplayedCards) {
         this.currentIndex++;
@@ -52,25 +79,14 @@ export default {
       }
     },
     changeCardColors() {
-      const colors = ['blue', 'red', 'yellow', 'green'];
-      this.currentColorIndex = (this.currentColorIndex + 1) % colors.length; 
-      const currentColor = colors[this.currentColorIndex]; 
-     
-      this.cards.forEach(card => {
-        if (card.type === 'blue') {
-          card.image = card[currentColor];
-        }
-       
-      });
+      this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
     },
   },
 };
 </script>
 
-
 <style scoped>
-
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
 
 .main-bg {
   position: relative;
@@ -80,46 +96,53 @@ export default {
   background-size: cover;
   background-repeat: no-repeat;
 }
+
 .container {
   max-width: auto;
   margin: 0 auto;
   padding: 20px;
   text-align: center;
 }
+
 .character-list {
   display: flex;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
   overflow-x: auto;
-  margin-top: 100px;
+  margin-top: 70px;
 }
+
 .character-item {
   padding: 20px;
   border-radius: 8px;
   display: inline-block;
-  margin-right: 20px; 
+  margin-right: 20px;
 }
+
 .character-image img {
   max-width: 300px;
   max-height: 300px;
   width: 100%;
 }
+
 .character-info {
   padding: 10px;
 }
+
 .character-item h2 {
   margin-bottom: 10px;
   margin-left: 10px;
 }
+
 .character-item p {
   margin: 0;
 }
-
 
 h2 {
   color: black;
   font-size: 30px;
 }
+
 .prev-btn,
 .next-btn {
   position: absolute;
@@ -131,22 +154,26 @@ h2 {
   font-size: 48px;
   color: #000;
 }
+
 .prev-btn {
   left: 10px;
 }
+
 .next-btn {
   right: 10px;
 }
+
 .card-enter-active,
 .card-leave-active {
   transition: opacity 0.5s;
 }
+
 .card-enter,
 .card-leave-to {
   opacity: 0;
 }
 
-.card-img:hover{
- transform: translateY(-20px);
+.card-img:hover {
+  transform: translateY(-20px);
 }
 </style>
